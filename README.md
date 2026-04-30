@@ -1,11 +1,14 @@
 ## Screenshots
 
-![Login Screen](https://raw.githubusercontent.com/storeage/images/refs/heads/main/Screenshot_20260108-091952_Trebuchet.png)
-![Security Screen](https://raw.githubusercontent.com/storeage/images/refs/heads/main/Screenshot_20260108-190423_Trebuchet.png)
-![Home Screen](https://raw.githubusercontent.com/storeage/images/refs/heads/main/Screenshot_20260107-075701_Trebuchet.png)
-![Transaction Screen](https://raw.githubusercontent.com/storeage/images/refs/heads/main/Screenshot_20260107-075716_Trebuchet.png)
-![Setting Screen](https://raw.githubusercontent.com/storeage/images/refs/heads/main/Screenshot_20260107-075727_Trebuchet.png)
-![Biometric+Pin Screen](https://raw.githubusercontent.com/storeage/images/refs/heads/main/Screenshot_20260107-075737_Trebuchet.png)
+<p align="center">
+<img src="https://raw.githubusercontent.com/storeage/images/refs/heads/main/Screenshot_20260108-091952_Trebuchet.png" width="250"/>
+<img src="https://raw.githubusercontent.com/storeage/images/refs/heads/main/Screenshot_20260108-190423_Trebuchet.png" width="250"/>
+<img src="https://raw.githubusercontent.com/storeage/images/refs/heads/main/Screenshot_20260107-075701_Trebuchet.png" width="250"/>
+<img src="https://raw.githubusercontent.com/storeage/images/refs/heads/main/Screenshot_20260107-075716_Trebuchet.png" width="250"/>
+<img src="https://raw.githubusercontent.com/storeage/images/refs/heads/main/Screenshot_20260107-075727_Trebuchet.png" width="250"/>
+<img src="https://raw.githubusercontent.com/storeage/images/refs/heads/main/Screenshot_20260107-075737_Trebuchet.png" width="250"/>
+</p>
+
 
 
 This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
