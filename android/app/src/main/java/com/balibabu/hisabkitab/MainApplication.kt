@@ -1,4 +1,4 @@
-package com.balibabu.khatabook
+package com.balibabu.hisabkitab
 
 import android.app.Application
 import com.facebook.react.PackageList
