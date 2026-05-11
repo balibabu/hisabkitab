@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { getFirestore, collection, doc, onSnapshot, addDoc, updateDoc, deleteDoc, query, orderBy } from '@react-native-firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
+import { Alert } from 'react-native';
 
 const DataContext = createContext();
 const db = getFirestore();
@@ -30,7 +31,13 @@ export const DataProvider = ({ children }) => {
             setData(transactions);
             setLoading(false);
         }, (error) => {
-            console.error("Error fetching transactions:", error);
+            // Alert.alert("Error fetching transactions:", error.message);
+            setTimeout(() => {
+                Alert.alert(
+                    'Approval Pending',
+                    'Your account is still pending verification. You will be able to access transactions once an admin approves your account.'
+                  );
+            }, 3000);
             setLoading(false);
         });
         return () => subscriber();

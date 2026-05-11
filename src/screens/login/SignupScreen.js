@@ -1,52 +1,89 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Keyboard, TouchableWithoutFeedback, ActivityIndicator, Alert } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
 import { fonts } from '../../constants';
 
-export default function LoginScreen({ login, setIsLoginPage }) {
+export default function SignupScreen({ signup, setIsLoginPage }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [showPassword, setShowPassword] = useState(false);
-    const [loading, setLoading] = useState(false);
+    const [password2, setPassword2] = useState('');
+    const[loading, setLoading] = useState(false);
 
     const handlePress = async () => {
-        if (!email || !password) return Alert.alert("Error", "Please enter credentials");
+        if(password!=password2) return Alert.alert("Error", "Password Didnt Match");
+        if (!email || !password) return Alert.alert("Error", "Please enter all required fields");
         setLoading(true);
-        try { await login(email, password); } 
-        catch (e) { Alert.alert("Login Failed", e.message); } 
-        finally { setLoading(false); }
+        try { 
+            await signup(email, password); 
+            Alert.alert(
+                'Approval Request Submitted',
+                'Your account has been created successfully. Access will be granted after admin approval. For faster approval, please contact balibabu403@gmail.com.'
+              );
+        } 
+        catch (e) { 
+            Alert.alert("Signup Failed", e.message); 
+        } 
+        finally { 
+            setLoading(false); 
+        }
     };
 
     return (
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
             <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.container}>
                 <View style={styles.headerContainer}>
-                    <Text style={styles.welcomeText}>Welcome Back</Text>
-                    <Text style={styles.subText}>Sign in to manage your khatabook</Text>
+                    <Text style={styles.welcomeText}>Create Account</Text>
+                    <Text style={styles.subText}>Sign up to start your khatabook</Text>
                 </View>
 
                 <View style={styles.formContainer}>
+
                     <View style={styles.fieldWrapper}>
                         <Text style={styles.floatingLabel}>Email Address</Text>
-                        <TextInput style={styles.floatingInput} placeholder="name@example.com" placeholderTextColor="#cbd5e1" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
+                        <TextInput 
+                            style={styles.floatingInput} 
+                            placeholder="name@example.com" 
+                            placeholderTextColor="#cbd5e1" 
+                            value={email} 
+                            onChangeText={setEmail} 
+                            keyboardType="email-address" 
+                            autoCapitalize="none" 
+                        />
                     </View>
 
                     <View style={styles.fieldWrapper}>
-                        <Text style={styles.floatingLabel}>Password</Text>
+                        <Text style={styles.floatingLabel}>Choose Password</Text>
                         <View style={styles.passwordInputWrapper}>
-                            <TextInput style={[styles.floatingInput, { flex: 1, borderWidth: 0 }]} placeholder="••••••••" placeholderTextColor="#cbd5e1" value={password} onChangeText={setPassword} secureTextEntry={!showPassword} />
-                            <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon}>
-                                <Icon name={showPassword ? "eye-outline" : "eye-off-outline"} size={22} color="#94A3B8" />
-                            </TouchableOpacity>
+                            <TextInput 
+                                style={[styles.floatingInput, { flex: 1, borderWidth: 0 }]} 
+                                placeholder="••••••••" 
+                                placeholderTextColor="#cbd5e1" 
+                                value={password} 
+                                onChangeText={setPassword} 
+                                secureTextEntry={true}
+                            />
+                        </View>
+                    </View>
+
+                    <View style={styles.fieldWrapper}>
+                        <Text style={styles.floatingLabel}>Confirm Password</Text>
+                        <View style={styles.passwordInputWrapper}>
+                            <TextInput 
+                                style={[styles.floatingInput, { flex: 1, borderWidth: 0 }]} 
+                                placeholder="••••••••" 
+                                placeholderTextColor="#cbd5e1" 
+                                value={password2} 
+                                onChangeText={setPassword2} 
+                                secureTextEntry={true}
+                            />
                         </View>
                     </View>
 
                     <TouchableOpacity style={styles.button} onPress={handlePress} disabled={loading} activeOpacity={0.8}>
-                        {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Sign In</Text>}
+                        {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Sign Up</Text>}
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.toggleContainer} onPress={()=>setIsLoginPage(false)}>
-                        <Text style={styles.toggleText}>Don't have an account? <Text style={styles.toggleTextBold}>Sign Up</Text></Text>
+                    <TouchableOpacity style={styles.toggleContainer} onPress={()=>setIsLoginPage(true)}>
+                        <Text style={styles.toggleText}>Already have an account? <Text style={styles.toggleTextBold}>Sign In</Text></Text>
                     </TouchableOpacity>
                 </View>
             </KeyboardAvoidingView>
