@@ -11,12 +11,14 @@ import StatCard from './StatCard';
 import SegmentedControl from '../../components/SegmentedControl';
 import FloatingButton from '../../components/FloatingButton';
 import TransactionItem from './TransactionItem';
+import { useWorkspace } from '../../contexts/WorkspaceContext';
 
 
 export default function Home() {
     const navigation = useNavigation();
     const { data } = useData();
-    const [filter, setFilter] = useState('Monthly');
+    const { activeWorkspace } = useWorkspace();
+    const [filter, setFilter] = useState('Yearly');
     const dashboardData = useDashboardData(data, filter);
     const filterOps = ['Weekly', 'Monthly', 'Yearly'];
 
@@ -24,7 +26,7 @@ export default function Home() {
         <SafeAreaView style={styles.container}>
             <FocusAwareStatusBar barStyle="light-content" backgroundColor="#4A90E2" />
             <View style={styles.header}>
-                <Text style={styles.headerTitle}>Hisab Kitab</Text>
+                <Text style={styles.headerTitle}>{activeWorkspace.name}</Text>
                 <SegmentedControl options={filterOps} activeOption={filter} onChange={setFilter} />
             </View>
 

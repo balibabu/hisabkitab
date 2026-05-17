@@ -1,8 +1,6 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import {
-    EmailAuthProvider, getAuth, onAuthStateChanged, reauthenticateWithCredential,
-    signInWithEmailAndPassword, signOut, updatePassword, createUserWithEmailAndPassword
-} from '@react-native-firebase/auth';
+import { EmailAuthProvider, getAuth, onAuthStateChanged, reauthenticateWithCredential,
+    signInWithEmailAndPassword, signOut, updatePassword, createUserWithEmailAndPassword } from '@react-native-firebase/auth';
 import MyIndicator from '../components/MyIndicator';
 import LoginScreen from '../screens/login/LoginScreen';
 import SignupScreen from '../screens/login/SignupScreen';

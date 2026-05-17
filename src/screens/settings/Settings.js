@@ -5,6 +5,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import AppLockSetup from './AppLockSetup'
 import ChangePassword from './ChangePassword';
 import SignOut from './SignOut';
+import ChangeWorkspace from './ChangeWorkspace';
 import FocusAwareStatusBar from '../../components/FocusAwareStatusBar';
 
 export default function SettingsScreen() {
@@ -24,6 +25,7 @@ export default function SettingsScreen() {
 
                 <View style={styles.menuContainer}>
                     <ChangePassword />
+                    <ChangeWorkspace />
                     <AppLockSetup />
                     <SignOut />
                 </View>

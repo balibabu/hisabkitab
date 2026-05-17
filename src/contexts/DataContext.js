@@ -1,27 +1,22 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import { getFirestore, collection, doc, onSnapshot, addDoc, updateDoc, deleteDoc, query, orderBy } from '@react-native-firebase/firestore';
+import { getFirestore, collection, doc, onSnapshot, addDoc, updateDoc, deleteDoc, query, orderBy, where } from '@react-native-firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
 import { Alert } from 'react-native';
-import WorkspaceScreen from '../screens/home/WorkspaceScreen';
+import { useWorkspace } from './WorkspaceContext';
 
 const DataContext = createContext();
 const db = getFirestore();
 
 export const DataProvider = ({ children }) => {
     const { user } = useAuth();
+    const { activeWorkspace } = useWorkspace();
+
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [activeWorkspace, setActiveWorkspace] = useState(null);
 
     useEffect(() => {
-        if (!user) {
-            setData([]);
-            setLoading(false);
-            return;
-        }
         const transactionsRef = collection(db, 'users', user.uid, 'transactions');
-        const q = query(transactionsRef, orderBy('date', 'desc'));
-
+        const q = query(transactionsRef, where('workspace', '==', activeWorkspace?.id || ''), orderBy('date', 'desc'));
         const subscriber = onSnapshot(q, (querySnapshot) => {
             const transactions = [];
             querySnapshot.forEach(documentSnapshot => {
@@ -33,17 +28,11 @@ export const DataProvider = ({ children }) => {
             setData(transactions);
             setLoading(false);
         }, (error) => {
-            // Alert.alert("Error fetching transactions:", error.message);
-            setTimeout(() => {
-                Alert.alert(
-                    'Approval Pending',
-                    'Your account is still pending verification. You will be able to access transactions once an admin approves your account.'
-                );
-            }, 3000);
+            Alert.alert("Error fetching transactions:", error.message);
             setLoading(false);
         });
         return () => subscriber();
-    }, [user]);
+    }, [user, activeWorkspace]);
 
     async function save(item) {
         const { id, ...payload } = item;
@@ -52,7 +41,7 @@ export const DataProvider = ({ children }) => {
             await updateDoc(docRef, payload);
         } else {
             const collectionRef = collection(db, 'users', user.uid, 'transactions');
-            await addDoc(collectionRef, payload);
+            await addDoc(collectionRef, { ...payload, workspace: activeWorkspace?.id });
         }
     }
 
@@ -61,12 +50,9 @@ export const DataProvider = ({ children }) => {
         await deleteDoc(docRef);
     }
 
-    const workspaces = ['Home', 'Work', 'School'];
-    const createWorkspace = () => { };
-
     return (
         <DataContext.Provider value={{ data, loading, save, remove }}>
-            {activeWorkspace ? children : <WorkspaceScreen {...{workspaces, setActiveWorkspace, createWorkspace}}/>}
+            {children}
         </DataContext.Provider>
     );
 }
