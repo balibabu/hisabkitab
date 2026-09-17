@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Keyboard, TouchableWithoutFeedback, ActivityIndicator, Alert, ScrollView, StatusBar } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Keyboard, TouchableWithoutFeedback, ActivityIndicator, Alert, ScrollView, StatusBar, Modal } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
+import { useAuth } from '../../contexts/AuthContext';
+import SwipeActions from '../../components/SwipeActions';
 import { fonts } from '../../constants';
 
 const AVATAR_TINTS = ['#4A90E2', '#10B981', '#0D9488', '#3B82F6'];
@@ -21,9 +23,13 @@ const tintFor = (id = '', index = 0) => {
 
 export default function WorkspaceScreen() {
     const { workspaces, setActiveWorkspace, createWorkspace, updateWorkspace, deleteWorkspace } = useWorkspace();
+    const { reauthenticate } = useAuth();
     const [workspaceName, setWorkspaceName] = useState('');
     const [editingId, setEditingId] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [deleteTarget, setDeleteTarget] = useState(null);
+    const [password, setPassword] = useState('');
+    const [deleting, setDeleting] = useState(false);
 
     const handleSubmit = async () => {
         if (!workspaceName.trim()) return Alert.alert("Error", "Please enter a valid name");
@@ -49,18 +55,27 @@ export default function WorkspaceScreen() {
         setWorkspaceName(ws.name);
     };
 
-    const handleDeleteConfirm = (ws) => {
-        Alert.alert("Delete Workspace", `Are you sure you want to delete "${ws.name}"?`, [
-            { text: "Cancel", style: "cancel" },
-            {
-                text: "Delete",
-                style: "destructive",
-                onPress: async () => {
-                    try { await deleteWorkspace(ws.id); }
-                    catch (e) { Alert.alert("Error", e.message); }
-                }
-            }
-        ]);
+    const handleDeleteRequest = (ws) => {
+        setPassword('');
+        setDeleteTarget(ws);
+    };
+
+    const handleDeleteConfirm = async () => {
+        if (!password.trim()) return Alert.alert("Error", "Please enter your password");
+        setDeleting(true);
+        try {
+            await reauthenticate(password.trim());
+            await deleteWorkspace(deleteTarget.id);
+            setDeleteTarget(null);
+            setPassword('');
+        } catch (e) {
+            const msg = e?.code === 'auth/invalid-credential' || e?.code === 'auth/wrong-password'
+                ? "Incorrect password. Please try again."
+                : e.message;
+            Alert.alert("Delete Failed", msg);
+        } finally {
+            setDeleting(false);
+        }
     };
 
     const resetEdit = () => {
@@ -95,7 +110,7 @@ export default function WorkspaceScreen() {
                     <View style={styles.body}>
                         <View style={styles.sectionHeader}>
                             <Text style={styles.sectionTitle}>Your Workspaces</Text>
-                            {workspaces.length > 0 && <Text style={styles.sectionHint}>Tap to open</Text>}
+                            {workspaces.length > 0 && <Text style={styles.sectionHint}>Swipe for actions</Text>}
                         </View>
 
                         {workspaces.length === 0 ? (
@@ -110,29 +125,26 @@ export default function WorkspaceScreen() {
                             workspaces.map((ws, index) => {
                                 const tint = tintFor(ws.id, index);
                                 return (
-                                    <View key={ws.id} style={styles.workspaceCard}>
-                                        <TouchableOpacity style={styles.workspaceMain} onPress={() => setActiveWorkspace(ws)} activeOpacity={0.7}>
-                                            <View style={[styles.avatar, { backgroundColor: tint + '1A' }]}>
-                                                <Text style={[styles.avatarText, { color: tint }]}>{getInitials(ws.name)}</Text>
-                                            </View>
-                                            <View style={styles.workspaceInfo}>
-                                                <Text style={styles.workspaceName} numberOfLines={1}>{ws.name}</Text>
-                                                <View style={styles.openHint}>
-                                                    <Icon name="chevron-forward" size={12} color="#94A3B8" />
-                                                    <Text style={styles.openHintText}>Open</Text>
+                                    <SwipeActions
+                                        key={ws.id}
+                                        onEdit={() => handleEditSetup(ws)}
+                                        onDelete={() => handleDeleteRequest(ws)}
+                                    >
+                                        <View style={styles.workspaceCard}>
+                                            <TouchableOpacity style={styles.workspaceMain} onPress={() => setActiveWorkspace(ws)} activeOpacity={0.7}>
+                                                <View style={[styles.avatar, { backgroundColor: tint + '1A' }]}>
+                                                    <Text style={[styles.avatarText, { color: tint }]}>{getInitials(ws.name)}</Text>
                                                 </View>
-                                            </View>
-                                        </TouchableOpacity>
-
-                                        <View style={styles.actionButtons}>
-                                            <TouchableOpacity onPress={() => handleEditSetup(ws)} style={styles.actionIcon}>
-                                                <Icon name="create-outline" size={18} color="#64748B" />
-                                            </TouchableOpacity>
-                                            <TouchableOpacity onPress={() => handleDeleteConfirm(ws)} style={styles.actionIcon}>
-                                                <Icon name="trash-outline" size={18} color="#EF4444" />
+                                                <View style={styles.workspaceInfo}>
+                                                    <Text style={styles.workspaceName} numberOfLines={1}>{ws.name}</Text>
+                                                    <View style={styles.openHint}>
+                                                        <Icon name="chevron-forward" size={12} color="#94A3B8" />
+                                                        <Text style={styles.openHintText}>Open</Text>
+                                                    </View>
+                                                </View>
                                             </TouchableOpacity>
                                         </View>
-                                    </View>
+                                    </SwipeActions>
                                 );
                             })
                         )}
@@ -178,6 +190,42 @@ export default function WorkspaceScreen() {
                         </TouchableOpacity>
                     </View>
                 </ScrollView>
+
+                <Modal
+                    visible={!!deleteTarget}
+                    transparent
+                    animationType="fade"
+                    onRequestClose={() => setDeleteTarget(null)}
+                >
+                    <View style={styles.modalOverlay}>
+                        <View style={styles.modalContent}>
+                            <View style={styles.modalIconCircle}>
+                                <Icon name="trash-outline" size={28} color="#EF4444" />
+                            </View>
+                            <Text style={styles.modalTitle}>Delete Workspace</Text>
+                            <Text style={styles.modalMessage}>
+                                Are you sure you want to delete "{deleteTarget?.name}"?{"\n"}Enter your password to confirm.
+                            </Text>
+                            <TextInput
+                                style={styles.modalInput}
+                                placeholder="Password"
+                                placeholderTextColor="#94A3B8"
+                                value={password}
+                                onChangeText={setPassword}
+                                secureTextEntry
+                                autoCapitalize="none"
+                            />
+                            <TouchableOpacity style={[styles.modalButton, styles.modalDeleteButton]} onPress={handleDeleteConfirm} disabled={deleting} activeOpacity={0.8}>
+                                {deleting ? <ActivityIndicator color="#fff" /> : (
+                                    <Text style={styles.modalButtonText}>Delete</Text>
+                                )}
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.modalCancelButton} onPress={() => setDeleteTarget(null)} disabled={deleting}>
+                                <Text style={styles.modalCancelText}>Cancel</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </Modal>
             </KeyboardAvoidingView>
         </TouchableWithoutFeedback>
     );
@@ -236,7 +284,7 @@ const styles = StyleSheet.create({
     workspaceCard: {
         flexDirection: 'row', alignItems: 'center',
         backgroundColor: '#FFFFFF', borderRadius: 18,
-        marginBottom: 12, padding: 12, paddingRight: 6,
+        marginBottom: 12, padding: 12,
         elevation: 3, shadowColor: '#4A90E2', shadowOpacity: 0.08,
         shadowOffset: { width: 0, height: 3 }, shadowRadius: 8,
         borderWidth: 1, borderColor: '#EFF6FF',
@@ -248,8 +296,6 @@ const styles = StyleSheet.create({
     workspaceName: { fontSize: 16, color: '#1E293B', fontFamily: fonts?.bold, fontWeight: '600', marginBottom: 3 },
     openHint: { flexDirection: 'row', alignItems: 'center', gap: 1 },
     openHintText: { fontSize: 11, color: '#94A3B8', fontFamily: fonts?.regular, marginLeft: 2 },
-    actionButtons: { flexDirection: 'row', alignItems: 'center' },
-    actionIcon: { padding: 8, borderRadius: 10 },
 
     createCard: {
         backgroundColor: '#FFFFFF', borderRadius: 22,
@@ -285,4 +331,16 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.35, shadowOffset: { width: 0, height: 4 }, shadowRadius: 10,
     },
     buttonText: { color: '#FFFFFF', fontSize: 16, fontFamily: fonts?.bold, fontWeight: 'bold', letterSpacing: 0.3 },
+
+    modalOverlay: { flex: 1, backgroundColor: 'rgba(15, 23, 42, 0.6)', justifyContent: 'center', alignItems: 'center', padding: 24 },
+    modalContent: { width: '100%', backgroundColor: '#FFFFFF', borderRadius: 24, padding: 24, alignItems: 'center', elevation: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.2, shadowRadius: 20 },
+    modalIconCircle: { width: 56, height: 56, borderRadius: 28, backgroundColor: '#FEF2F2', alignItems: 'center', justifyContent: 'center', marginBottom: 14 },
+    modalTitle: { fontSize: 20, fontFamily: fonts?.bold, fontWeight: 'bold', color: '#1E293B', marginBottom: 8 },
+    modalMessage: { fontSize: 14, fontFamily: fonts?.regular, color: '#64748B', textAlign: 'center', marginBottom: 18, lineHeight: 20 },
+    modalInput: { width: '100%', height: 50, borderWidth: 1.5, borderColor: '#E2E8F0', borderRadius: 12, paddingHorizontal: 14, fontSize: 15, color: '#1E293B', fontFamily: fonts?.regular, marginBottom: 16, backgroundColor: '#F8FAFC' },
+    modalButton: { width: '100%', height: 50, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
+    modalDeleteButton: { backgroundColor: '#EF4444', elevation: 4, shadowColor: '#EF4444', shadowOpacity: 0.3, shadowOffset: { width: 0, height: 4 }, shadowRadius: 8 },
+    modalButtonText: { color: '#FFFFFF', fontSize: 16, fontFamily: fonts?.bold, fontWeight: 'bold', letterSpacing: 0.5 },
+    modalCancelButton: { marginTop: 12, paddingVertical: 8, paddingHorizontal: 20 },
+    modalCancelText: { fontSize: 15, fontFamily: fonts?.bold, fontWeight: '600', color: '#64748B' },
 });

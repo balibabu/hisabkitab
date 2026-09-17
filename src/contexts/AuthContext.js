@@ -36,8 +36,13 @@ export const AuthProvider = ({ children }) => {
         logout();
     }
 
+    async function reauthenticate(password) {
+        const credential = EmailAuthProvider.credential(user.email, password);
+        await reauthenticateWithCredential(auth.currentUser, credential);
+    }
+
     return (
-        <AuthContext.Provider value={{ user, logout, changePassword }}>
+        <AuthContext.Provider value={{ user, logout, changePassword, reauthenticate }}>
             {initializing ? (<MyIndicator text="loading user info" />) : user ? (children) : isLoginPage ?
                 (<LoginScreen login={login} setIsLoginPage={setIsLoginPage} />) :
                 (<SignupScreen signup={signup} setIsLoginPage={setIsLoginPage} />)}

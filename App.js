@@ -8,16 +8,16 @@ import { WorkspaceProvider } from './src/contexts/WorkspaceContext';
 
 export default function App() {
     return (
-        <AuthProvider>
-            <AppLockProvider>
-                <WorkspaceProvider>
-                    <DataProvider>
-                        <GestureHandlerRootView>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+            <AuthProvider>
+                <AppLockProvider>
+                    <WorkspaceProvider>
+                        <DataProvider>
                             <AppNavigator />
-                        </GestureHandlerRootView>
-                    </DataProvider>
-                </WorkspaceProvider>
-            </AppLockProvider>
-        </AuthProvider>
+                        </DataProvider>
+                    </WorkspaceProvider>
+                </AppLockProvider>
+            </AuthProvider>
+        </GestureHandlerRootView>
     );
 }
