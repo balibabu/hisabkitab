@@ -3,9 +3,11 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { fonts } from '../../constants';
 import { formatMoney, formatDate } from '../../utils/formatters';
+import useNow from '../../hooks/useNow';
 
 const TransactionItem = ({ item }) => {
     const isIncome = item.category === 0;
+    const now = useNow();
 
     return (
         <TouchableOpacity style={styles.container} activeOpacity={0.7}>
@@ -17,7 +19,7 @@ const TransactionItem = ({ item }) => {
                     <Text style={styles.description} numberOfLines={1}>
                         {item.description || 'No Description'}
                     </Text>
-                    <Text style={styles.date}>{formatDate(item.date)}</Text>
+                    <Text style={styles.date}>{formatDate(item.date, now)}</Text>
                 </View>
             </View>
 

@@ -2,9 +2,9 @@ export const formatMoney = (amount) => {
     return `Rs ${parseFloat(amount)}`;
 };
 
-export const formatDate = (isoDate) => {
+export const formatDate = (isoDate, nowMs = Date.now()) => {
     const d = new Date(isoDate);
-    const now = new Date();
+    const now = new Date(nowMs);
     const diff = now - d; // Difference in milliseconds
     
     // 1. Today: Relative Time
@@ -19,8 +19,11 @@ export const formatDate = (isoDate) => {
     // yesterday.setDate(now.getDate() - 1);
     // if (d.toDateString() === yesterday.toDateString()) return 'Yesterday';
 
-    // 3. Past Dates: Dec 24 or Dec 24, 2023
+    // 3. Past Dates: Dec 24 or Dec 24, 2023 (with weekday for last 7 days)
+    const withinLast7Days = diff > 0 && diff < 7 * 86400000;
+
     return d.toLocaleDateString('en-IN', {
+        weekday: withinLast7Days ? 'long' : undefined,
         day: 'numeric',
         month: 'short',
         year: d.getFullYear() === now.getFullYear() ? undefined : 'numeric',
