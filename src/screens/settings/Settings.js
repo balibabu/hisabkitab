@@ -6,6 +6,7 @@ import AppLockSetup from './AppLockSetup'
 import ChangePassword from './ChangePassword';
 import SignOut from './SignOut';
 import ChangeWorkspace from './ChangeWorkspace';
+import RateShareButtons from './RateShareButtons';
 import FocusAwareStatusBar from '../../components/FocusAwareStatusBar';
 
 export default function SettingsScreen() {
@@ -31,7 +32,7 @@ export default function SettingsScreen() {
                 </View>
 
                 <View style={styles.footerContainer}>
-                    <Text style={styles.footerText}>made by balibabu</Text>
+                    <RateShareButtons />
                 </View>
             </ScrollView>
         </SafeAreaView>
@@ -45,6 +46,5 @@ const styles = StyleSheet.create({
     avatarText: { fontSize: 36, color: '#fff', fontWeight: 'bold', },
     email: { fontSize: 14, color: '#666', marginTop: 5, },
     menuContainer: { paddingHorizontal: 20, },
-    footerContainer: { flex: 1, justifyContent: 'flex-end', alignItems: 'center', paddingBottom: 20, marginTop: 20, },
-    footerText: { fontSize: 16, fontWeight: '600', color: '#999', opacity: 0.2, }
+    footerContainer: { flex: 1, justifyContent: 'flex-end', alignItems: 'center', paddingBottom: 20, marginTop: 20, paddingHorizontal: 20, width: '100%', },
 });
